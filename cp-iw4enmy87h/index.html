@@ -276,7 +276,7 @@ tbody tr.sel{background:rgba(255,122,26,.08)}
     <!-- ---------- users ---------- -->
     <section id="users" hidden>
       <div class="page-h"><div><h2>المستخدمون</h2><p id="ucount"></p></div></div>
-      <div class="bancard" id="banCard" hidden>
+      <div class="bancard" id="banCard">
         <div class="banhead"><b>⛔ المحظورون</b><span class="muted" id="banCount"></span></div>
         <p class="muted" style="margin:4px 0 12px;font-size:13px">يُحظر الجهاز والحساب تلقائيًا بعد ١٢ كودًا خاطئًا. «فك الحظر» يعيد له التطبيق فورًا ويصفّر محاولاته.</p>
         <div class="tbl" style="border:0"><table id="banTable"></table></div>
@@ -600,8 +600,9 @@ async function loadUsers(){
 let BANS=[];
 async function loadBans(){
   const {data,error}=await db.rpc('admin_bans'); if(error) return;
-  BANS=data||[]; const card=$('#banCard'); card.hidden=!BANS.length;
-  $('#banCount').textContent=BANS.length?`${num(BANS.length)} محظور`:'';
+  BANS=data||[];
+  $('#banCount').textContent=BANS.length?`${num(BANS.length)} محظور`:'لا يوجد محظورون حاليًا ✅';
+  if(!BANS.length){ $('#banTable').innerHTML=''; return; }
   $('#banTable').innerHTML=`<thead><tr><th></th><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>آخر كود كتبه</th><th>محاولات</th><th>تاريخ الحظر</th></tr></thead><tbody>`+
   BANS.map((b,i)=>`<tr><td><button class="btn sm" style="background:var(--ok);color:#06140c;font-weight:700" onclick="unban(${i})">فك الحظر</button></td>
     <td>${b.is_guest?'<span class="pill p-guest">ضيف</span>':esc(b.full_name)||'—'}</td><td class="en">${esc(b.email)||'—'}</td><td class="en">${esc(b.phone)||'—'}</td>
