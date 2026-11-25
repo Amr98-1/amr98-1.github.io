@@ -21,6 +21,9 @@
   --ember:#ff7a1a;--ember2:#ffb36b;--emberSoft:rgba(255,122,26,.13);--ok:#3fbf7f;--bad:#e5484d;--blue:#5b8def;--r:18px}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+.bancard{background:linear-gradient(180deg,rgba(229,72,77,.08),transparent);border:1px solid rgba(229,72,77,.35);border-radius:var(--r);padding:16px;margin:0 0 16px}
+.banhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.banhead b{color:var(--bad);font-size:16px}
+
 .flag{border-radius:3px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
 .cflag{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .online{display:inline-flex;align-items:center;gap:6px;color:var(--ok);white-space:nowrap}.online i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
@@ -242,6 +245,20 @@ tbody tr.sel{background:rgba(255,122,26,.08)}
           <button class="btn" id="tgen">＋ إنشاء كود تجريبي</button>
         </div>
       </div>
+      <div class="card" style="margin-top:12px">
+        <h3>⏱ كود مخصص (بالدقيقة والساعة)</h3>
+        <p class="muted" style="margin-top:0;line-height:1.8">حدّد المدة بالضبط: أيام + ساعات + دقائق. تبدأ المدة من لحظة تفعيل الكود، ويرى المستخدم العدّ التنازلي في التطبيق.</p>
+        <div class="row">
+          <label class="field">أيام<input id="cdays" type="number" value="0" min="0" style="width:80px"></label>
+          <label class="field">ساعات<input id="chours" type="number" value="1" min="0" max="23" style="width:80px"></label>
+          <label class="field">دقائق<input id="cmins" type="number" value="0" min="0" max="59" style="width:80px"></label>
+          <label class="field">العدد<input id="ccount" type="number" value="1" min="1" max="100" style="width:80px"></label>
+          <label class="field">السعر<input id="cprice" type="number" value="0" style="width:100px"></label>
+          <label class="field" style="flex:1;min-width:160px">ملاحظة / اسم العميل<input id="cnote"></label>
+          <button class="btn" id="cgen">＋ إنشاء كود مخصص</button>
+        </div>
+        <p class="muted" id="cpreview" style="margin:10px 0 0"></p>
+      </div>
       <div class="toolbar">
         <input id="kq" placeholder="🔍 بحث بالمفتاح أو الملاحظة أو الجهاز">
         <select id="kf"><option value="">كل الحالات</option><option value="trial">تجريبي فقط</option><option value="new">جديد</option><option value="active">مفعّل</option><option value="expired">منتهٍ</option><option value="suspended">موقوف</option></select>
@@ -259,6 +276,11 @@ tbody tr.sel{background:rgba(255,122,26,.08)}
     <!-- ---------- users ---------- -->
     <section id="users" hidden>
       <div class="page-h"><div><h2>المستخدمون</h2><p id="ucount"></p></div></div>
+      <div class="bancard" id="banCard" hidden>
+        <div class="banhead"><b>⛔ المحظورون</b><span class="muted" id="banCount"></span></div>
+        <p class="muted" style="margin:4px 0 12px;font-size:13px">يُحظر الجهاز والحساب تلقائيًا بعد ١٢ كودًا خاطئًا. «فك الحظر» يعيد له التطبيق فورًا ويصفّر محاولاته.</p>
+        <div class="tbl" style="border:0"><table id="banTable"></table></div>
+      </div>
       <div class="ccountries" id="ucountries"></div>
       <div class="toolbar"><input id="uq" placeholder="🔍 بحث بالاسم أو البريد أو الهاتف أو المفتاح أو الدولة"></div>
       <div class="tbl"><table id="utable"></table></div>
@@ -470,7 +492,7 @@ function renderKeys(){
     <td><input type="checkbox" class="ck" ${SEL.has(k.id)?'checked':''} onchange="toggleSel('${k.id}',this.checked)"></td>
     <td class="code" title="نسخ" onclick="copy('${k.code}')">${k.code}</td>
     <td><span class="pill p-${s}">${stateName[s]}</span>${k.is_trial?' <span class="pill" style="background:#ff7a1a22;color:var(--ember)">تجريبي</span>':''}</td>
-    <td>${k.duration_days} يوم</td><td>${num(k.price)}</td>
+    <td>${k.duration_minutes?`<span class="pill" style="background:rgba(91,141,239,.15);color:var(--blue)">⏱ ${durText(k.duration_minutes)}</span>`:`${k.duration_days} يوم`}</td><td>${num(k.price)}</td>
     <td class="muted">${esc(k.device_name)||'—'}</td><td>${fmtDate(k.activated_at)}</td><td>${fmtDate(k.expires_at)}</td>
     <td class="muted">${esc(k.note)}</td>
     <td>
@@ -513,6 +535,25 @@ $('#kgen').onclick=async()=>{
   navigator.clipboard?.writeText(codes);
   toast(`أُنشئ ${data.length} مفتاح ونُسخ`); loadKeys();
 };
+function durText(min){
+  const d=Math.floor(min/1440), h=Math.floor(min%1440/60), m=min%60, out=[];
+  if(d) out.push(d===1?'يوم':d===2?'يومان':d<=10?`${d} أيام`:`${d} يومًا`);
+  if(h) out.push(h===1?'ساعة':h===2?'ساعتان':h<=10?`${h} ساعات`:`${h} ساعة`);
+  if(m) out.push(m===1?'دقيقة':m===2?'دقيقتان':m<=10?`${m} دقائق`:`${m} دقيقة`);
+  return out.join(' و') || '—';
+}
+function customMinutes(){ return (+$('#cdays').value||0)*1440 + (+$('#chours').value||0)*60 + (+$('#cmins').value||0); }
+function updCustomPreview(){ const m=customMinutes(); $('#cpreview').textContent = m>0 ? `المدة: ${durText(m)}` : 'اكتب مدة أكبر من صفر'; }
+['#cdays','#chours','#cmins'].forEach(id=>$(id).oninput=updCustomPreview); updCustomPreview();
+$('#cgen').onclick=async()=>{
+  const m=customMinutes(); if(m<1) return toast('اكتب مدة أكبر من صفر');
+  const {data,error}=await db.rpc('admin_create_custom_keys',{p_count:+$('#ccount').value||1,p_minutes:m,p_price:+$('#cprice').value||0,p_note:$('#cnote').value});
+  if(error) return toast(error.message);
+  const codes=data.map(k=>k.code).join('\n');
+  $('#knew').textContent=codes; $('#knewbox').style.display='block';
+  navigator.clipboard?.writeText(codes);
+  toast(`أُنشئ ${data.length} كود مدته ${durText(m)} ونُسخ`); loadKeys();
+};
 $('#tgen').onclick=async()=>{
   const {data,error}=await db.rpc('admin_create_trial_keys',{p_count:+$('#tcount').value,p_note:$('#tnote').value});
   if(error) return toast(error.message);
@@ -554,7 +595,24 @@ function renderCountries(){ const el=$('#ucountries'); if(!el) return; const c={
   el.innerHTML=list.length?list.map(([cc,n])=>`<span class="cchip" onclick="$('#uq').value='${cc}';renderUsers()">${flagImg(cc,18)} ${esc(countryName(cc))} <b>${num(n)}</b></span>`).join(''):'<span class="muted">ستظهر الدول بعد أن يفتح المستخدمون التطبيق</span>'; }
 async function loadUsers(){
   const {data,error}=await db.rpc('admin_users'); if(error) return toast(error.message);
-  USERS=data; renderUsers();
+  USERS=data; renderUsers(); loadBans();
+}
+let BANS=[];
+async function loadBans(){
+  const {data,error}=await db.rpc('admin_bans'); if(error) return;
+  BANS=data||[]; const card=$('#banCard'); card.hidden=!BANS.length;
+  $('#banCount').textContent=BANS.length?`${num(BANS.length)} محظور`:'';
+  $('#banTable').innerHTML=`<thead><tr><th></th><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>آخر كود كتبه</th><th>محاولات</th><th>تاريخ الحظر</th></tr></thead><tbody>`+
+  BANS.map((b,i)=>`<tr><td><button class="btn sm" style="background:var(--ok);color:#06140c;font-weight:700" onclick="unban(${i})">فك الحظر</button></td>
+    <td>${b.is_guest?'<span class="pill p-guest">ضيف</span>':esc(b.full_name)||'—'}</td><td class="en">${esc(b.email)||'—'}</td><td class="en">${esc(b.phone)||'—'}</td>
+    <td>${flagCell(b.country)}</td><td class="muted" title="${esc(b.user_agent)}">${esc(b.phone_model)||'—'}</td><td class="en muted">${esc(b.last_ip)||'—'}</td>
+    <td class="code en">${esc(b.last_code)||'—'}</td><td>${num(b.fails)}</td><td>${fmtDate(b.banned_at)}</td></tr>`).join('')+'</tbody>';
+}
+async function unban(i){
+  const b=BANS[i]; if(!b) return;
+  if(!confirm(`فك الحظر عن ${b.full_name||b.email||'هذا الضيف'}؟`)) return;
+  const {error}=await db.rpc('admin_unban',{p_device:b.device_id}); if(error) return toast(error.message);
+  toast('تم فك الحظر ✅'); loadBans();
 }
 function renderUsers(){
   const q=$('#uq').value.trim().toLowerCase();
