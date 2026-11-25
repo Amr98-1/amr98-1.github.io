@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0b0c">
+<title>لوحة تحكم Fluent</title>
+<link rel="icon" type="image/png" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<meta name="application-name" content="لوحة تحكم Fluent">
+<meta name="apple-mobile-web-app-title" content="Fluent Admin">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0b0b0c;--s1:#131315;--s2:#1a1a1d;--s3:#222226;--line:#26262a;--t:#edeae4;--t2:#9a968f;--t3:#5e5b57;
+  --ember:#ff7a1a;--ember2:#ffb36b;--emberSoft:rgba(255,122,26,.13);--ok:#3fbf7f;--bad:#e5484d;--blue:#5b8def;--r:18px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.flag{border-radius:3px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.cflag{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.online{display:inline-flex;align-items:center;gap:6px;color:var(--ok);white-space:nowrap}.online i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.ccountries{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}.cchip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:var(--s2);border:1px solid var(--line,#26262a);cursor:pointer;font-size:13px}.cchip b{color:var(--ember)}
+
+html,body{margin:0;background:var(--bg);color:var(--t);font-family:Almarai,system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.en{direction:ltr;unicode-bidi:isolate}
+button,input,select,textarea{font:inherit;color:inherit}
+.orb{width:34px;height:34px;border-radius:50%;flex:none;background:radial-gradient(circle at 42% 40%,#ffc478,var(--ember) 55%,#7a2e00);box-shadow:0 0 22px rgba(255,122,26,.45);display:grid;place-items:center;color:#1a0a00;font-weight:800}
+/* ---------- auth screens ---------- */
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth-box{width:min(400px,100%);background:var(--s1);border:1px solid var(--line);border-radius:26px;padding:34px 28px;text-align:center}
+.auth-box .orb{width:64px;height:64px;font-size:28px;margin:0 auto 18px}
+.auth-box h1{font-size:22px;margin:0 0 6px}
+.auth-box p{color:var(--t2);margin:0 0 20px;line-height:1.8}
+.auth-box input{width:100%;margin:6px 0;text-align:center;font-size:16px}
+.qr{background:#fff;border-radius:16px;padding:12px;width:200px;height:200px;margin:6px auto 12px}
+.qr img{width:100%;height:100%}
+.secret{font-size:12px;color:var(--t2);word-break:break-all;background:var(--s2);border-radius:10px;padding:8px;margin-bottom:12px}
+.steps{text-align:right;color:var(--t2);font-size:13px;line-height:2;margin:0 0 14px;padding-inline-start:18px}
+/* ---------- layout ---------- */
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{position:sticky;top:0;height:100vh;border-inline-end:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand b{font-size:19px}.brand small{display:block;color:var(--t3);font-size:11px;margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:10px;background:none;border:0;color:var(--t2);padding:11px 12px;border-radius:12px;cursor:pointer;text-align:start;transition:.15s}
+.nav button:hover{background:var(--s1);color:var(--t)}
+.nav button.on{background:var(--emberSoft);color:var(--ember)}
+.nav i{font-style:normal;width:22px;text-align:center;font-size:16px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.whoami{font-size:12px;color:var(--t3);padding:0 8px;word-break:break-all}
+.secure{font-size:11px;color:var(--ok);padding:0 8px}
+main{padding:26px 30px 60px;max-width:1280px;width:100%;min-width:0}
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.page-h h2{margin:0;font-size:24px}.page-h p{margin:4px 0 0;color:var(--t2)}
+/* ---------- components ---------- */
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card h3{margin:0 0 14px;font-size:15px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{position:relative;overflow:hidden}
+.kpi .k{color:var(--t2);font-size:12px;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:28px;font-weight:800;margin-top:8px;direction:ltr;text-align:right}
+.kpi .s{color:var(--t3);font-size:11px;margin-top:4px}
+.kpi.hot{border-color:rgba(255,122,26,.45);background:linear-gradient(160deg,rgba(255,122,26,.12),var(--s1) 60%)}
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+.charts2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chart-box{position:relative;height:240px}
+input,select,textarea{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ember)}
+.btn{background:var(--ember);color:#1a0a00;border:0;border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--s2);color:var(--t);border:1px solid var(--line)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:9px;font-weight:400}
+.btn.red{color:var(--bad)}.btn.full{width:100%}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:6px;color:var(--t2);font-size:12px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 12px}
+.toolbar input{flex:1;min-width:200px}
+.tbl{overflow:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--s1)}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:12px 12px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle;white-space:nowrap}
+th{color:var(--t2);font-weight:400;font-size:12px;background:var(--s1);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px}
+.p-new{background:#5b8def22;color:var(--blue)}.p-active{background:#3fbf7f22;color:var(--ok)}
+.p-suspended{background:#e5484d22;color:var(--bad)}.p-expired{background:#ffffff11;color:var(--t2)}.p-guest{background:#ffffff11;color:var(--t2)}
+.code{font-family:ui-monospace,Consolas,monospace;letter-spacing:.5px;cursor:pointer;color:var(--ember2)}
+.muted{color:var(--t2)}.dim{color:var(--t3)}
+.newkeys{margin-top:14px;display:none;background:var(--s2);border:1px dashed rgba(255,122,26,.5);border-radius:14px;padding:14px}
+.newkeys pre{margin:8px 0 0;white-space:pre-wrap;color:var(--ember2);font-family:ui-monospace,Consolas,monospace}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.lv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.lv .card{padding:14px}.lv .v{font-size:22px;font-weight:800;margin-top:6px}
+.bar{height:5px;background:var(--line);border-radius:5px;margin-top:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ember);border-radius:5px}
+textarea.json{width:100%;min-height:320px;font-family:ui-monospace,Consolas,monospace;font-size:12px;direction:ltr}
+.checks{display:flex;gap:8px;flex-wrap:wrap}
+.checks label{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer}
+.bulkbar{position:sticky;top:8px;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--s3);border:1px solid rgba(255,122,26,.5);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+.bulkbar b{color:var(--ember);margin-inline-end:auto}
+.ck{width:18px;height:18px;accent-color:var(--ember);cursor:pointer;padding:0}
+tbody tr.sel{background:rgba(255,122,26,.08)}
+.empty{padding:30px;text-align:center;color:var(--t3)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--line);padding:12px 18px;border-radius:14px;opacity:0;transition:.25s;z-index:50;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ---------- phone ---------- */
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  aside{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding:6px;border:0;border-top:1px solid var(--line);z-index:20;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+  .brand,.side-foot,.whoami,.secure{display:none}
+  .nav{flex-direction:row;flex:1;justify-content:space-around}
+  .nav button{flex-direction:column;gap:3px;font-size:10px;padding:7px 4px}
+  .nav i{font-size:18px}
+  main{padding:18px 16px 96px}
+  .mobile-top{display:flex!important}
+  .charts,.charts2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi .v{font-size:22px}
+}
+.mobile-top{display:none;align-items:center;gap:10px;margin-bottom:16px}
+.mobile-top b{flex:1;font-size:18px}
+</style>
+</head>
+<body>
+<script>
+  const SUPABASE_URL = 'https://xxzuhyihpukkmvcnkamf.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Fh3CpPGJNmeHudUvJMdkiw_ST7LdofU';
+</script>
+
+<!-- ================= sign in (email code) ================= -->
+<div class="auth" id="vLogin" hidden>
+  <div class="auth-box">
+    <div class="orb">F</div>
+    <h1>لوحة تحكم Fluent</h1>
+    <p>سجّل الدخول ببريد المشرف، وسيصلك رمز من 6 أرقام.</p>
+    <input id="lemail" class="en" type="email" placeholder="admin@email.com" autocomplete="email">
+    <div id="lcodebox" hidden><input id="lcode" class="en" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code"></div>
+    <button class="btn full" style="margin-top:10px" id="lbtn">إرسال الرمز</button>
+  </div>
+</div>
+
+<!-- ================= 2-step: first-time setup ================= -->
+<div class="auth" id="vEnroll" hidden>
+  <div class="auth-box">
+    <div class="orb">🔐</div>
+    <h1>تفعيل التحقق بخطوتين</h1>
+    <p>حماية إضافية للوحة: بعد رمز البريد ستُدخل رمزًا من تطبيق على هاتفك.</p>
+    <ol class="steps">
+      <li>نزّل تطبيق <b>Google Authenticator</b> على هاتفك.</li>
+      <li>اضغط «+» ثم «مسح رمز QR»، وامسح الرمز التالي.</li>
+      <li>اكتب الرقم المكوّن من 6 أرقام الذي يظهر في التطبيق.</li>
+    </ol>
+    <div class="qr"><img id="eqr" alt="QR"></div>
+    <div class="secret en">أو أدخل هذا المفتاح يدويًا: <span id="esecret"></span></div>
+    <input id="ecode" class="en" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code">
+    <button class="btn full" style="margin-top:10px" id="ebtn">تفعيل</button>
+  </div>
+</div>
+
+<!-- ================= 2-step: every sign in ================= -->
+<div class="auth" id="vMfa" hidden>
+  <div class="auth-box">
+    <div class="orb">🔐</div>
+    <h1>رمز التحقق</h1>
+    <p>افتح تطبيق Google Authenticator على هاتفك، واكتب الرمز الظاهر لـ Fluent.</p>
+    <input id="mcode" class="en" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code">
+    <button class="btn full" style="margin-top:10px" id="mbtn">دخول</button>
+    <button class="btn ghost full" style="margin-top:8px" onclick="logout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- ================= not an admin yet ================= -->
+<div class="auth" id="vNotAdmin" hidden>
+  <div class="auth-box">
+    <div class="orb">F</div>
+    <h1>حسابك جاهز</h1>
+    <p>بقيت خطوة واحدة: نفّذ هذا السطر في محرر SQL في سوبابيس، ثم حدّث الصفحة.</p>
+    <p class="en secret" id="nasql"></p>
+    <button class="btn ghost full" onclick="logout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- ================= the panel ================= -->
+<div class="shell" id="vApp" hidden>
+  <aside>
+    <div class="brand"><div class="orb">F</div><div><b>Fluent</b><small>لوحة التحكم</small></div></div>
+    <nav class="nav">
+      <button data-tab="dash" class="on"><i>📊</i>نظرة عامة</button>
+      <button data-tab="keys"><i>🔑</i>المفاتيح</button>
+      <button data-tab="users"><i>👥</i>المستخدمون</button>
+      <button data-tab="content"><i>📚</i>المحتوى</button>
+      <button data-tab="settings"><i>⚙️</i>الإعدادات</button>
+    </nav>
+    <div class="side-foot">
+      <div class="secure" id="secureBadge"></div>
+      <div class="whoami en" id="whoami"></div>
+      <button class="btn ghost full" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="mobile-top"><div class="orb">F</div><b>Fluent</b><button class="btn ghost sm" onclick="logout()">خروج</button></div>
+
+    <!-- ---------- dashboard ---------- -->
+    <section id="dash">
+      <div class="page-h"><div><h2>نظرة عامة</h2><p id="dashDate"></p></div><button class="btn ghost" onclick="loadDash()">↻ تحديث</button></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="charts">
+        <div class="card"><h3>التفعيلات والمبيعات — آخر 30 يومًا</h3><div class="chart-box"><canvas id="chActs"></canvas></div></div>
+        <div class="card"><h3>حالة المفاتيح</h3><div class="chart-box"><canvas id="chKeys"></canvas></div></div>
+      </div>
+      <div class="charts2">
+        <div class="card"><h3>تقدّم الطلاب في الجمل</h3><div class="chart-box"><canvas id="chLearn"></canvas></div></div>
+        <div class="card"><h3>اشتراكات تنتهي قريبًا</h3><div id="expiring"></div></div>
+      </div>
+    </section>
+
+    <!-- ---------- keys ---------- -->
+    <section id="keys" hidden>
+      <div class="page-h"><div><h2>المفاتيح</h2><p>أنشئ مفاتيح التفعيل وتابع حالتها.</p></div></div>
+      <div class="card">
+        <h3>إنشاء مفاتيح جديدة</h3>
+        <div class="row">
+          <label class="field">العدد<input id="kcount" type="number" value="1" min="1" max="500" style="width:90px"></label>
+          <label class="field">المدة (أيام)<input id="kdays" type="number" value="30" min="1" style="width:120px"></label>
+          <label class="field">السعر<input id="kprice" type="number" value="0" style="width:110px"></label>
+          <label class="field" style="flex:1;min-width:180px">ملاحظة / اسم العميل<input id="knote"></label>
+          <button class="btn" id="kgen">＋ إنشاء</button>
+        </div>
+        <div class="newkeys" id="knewbox"><span class="muted">المفاتيح الجديدة (نُسخت تلقائيًا):</span><pre id="knew"></pre></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>🎁 كود تجريبي (7 أيام)</h3>
+        <p class="muted" style="margin-top:0;line-height:1.8">يبدأ بـ <span class="en">TRIAL-7D</span> ومجاني. يعمل مرة واحدة فقط لكل جهاز ولكل حساب: إذا جرّبه شخص ثم طلب كودًا تجريبيًا آخر بحساب جديد على الجهاز نفسه، فلن يعمل، ويجب أن يشتري مفتاحًا حقيقيًا.</p>
+        <div class="row">
+          <label class="field">العدد<input id="tcount" type="number" value="1" min="1" max="100" style="width:90px"></label>
+          <label class="field" style="flex:1;min-width:180px">ملاحظة / اسم الشخص<input id="tnote"></label>
+          <button class="btn" id="tgen">＋ إنشاء كود تجريبي</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input id="kq" placeholder="🔍 بحث بالمفتاح أو الملاحظة أو الجهاز">
+        <select id="kf"><option value="">كل الحالات</option><option value="trial">تجريبي فقط</option><option value="new">جديد</option><option value="active">مفعّل</option><option value="expired">منتهٍ</option><option value="suspended">موقوف</option></select>
+      </div>
+      <div class="bulkbar" id="kbulk" hidden>
+        <b id="kselcount"></b>
+        <button class="btn ghost sm" onclick="bulkSetStatus('suspended')">⏸ إيقاف المحدد</button>
+        <button class="btn ghost sm" onclick="copySelected()">📋 نسخ المحدد</button>
+        <button class="btn sm" style="background:var(--bad);color:#fff" onclick="bulkDelete()">🗑 حذف المحدد</button>
+        <button class="btn ghost sm" onclick="clearSel()">إلغاء التحديد</button>
+      </div>
+      <div class="tbl"><table id="ktable"></table></div>
+    </section>
+
+    <!-- ---------- users ---------- -->
+    <section id="users" hidden>
+      <div class="page-h"><div><h2>المستخدمون</h2><p id="ucount"></p></div></div>
+      <div class="ccountries" id="ucountries"></div>
+      <div class="toolbar"><input id="uq" placeholder="🔍 بحث بالاسم أو البريد أو الهاتف أو المفتاح أو الدولة"></div>
+      <div class="tbl"><table id="utable"></table></div>
+    </section>
+
+    <!-- ---------- content ---------- -->
+    <section id="content" hidden>
+      <div class="page-h"><div><h2>المحتوى</h2><p>عدد الجمل المرفوعة في كل مستوى.</p></div></div>
+      <div class="lv" id="ccounts"></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>رفع ملف جمل (JSON)</h3>
+          <p class="muted" style="margin-top:0">ملفات المستويات في مجلد <span class="en">content/</span>. يستبدل الرفع الجمل ذات المعرّف نفسه.</p>
+          <input type="file" id="cfile" accept=".json" multiple>
+          <button class="btn" id="cbundled" style="margin-top:10px" hidden>رفع ملفات المحتوى الجاهزة</button>
+          <div id="clog" class="muted" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h3>تعديل جملة</h3>
+          <div class="row" style="margin-bottom:10px"><input id="cid" class="en" placeholder="A1-0001" style="flex:1"><button class="btn ghost" id="cload">تحميل</button><button class="btn" id="csave">حفظ</button></div>
+          <textarea id="cjson" class="json" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- settings ---------- -->
+    <section id="settings" hidden>
+      <div class="page-h"><div><h2>الإعدادات</h2><p>تصل التغييرات لكل المستخدمين عند فتح التطبيق.</p></div></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>الاختبارات</h3>
+          <div class="row">
+            <label class="field" style="flex:1">الاختبار كل 100 جملة
+              <select id="squiz"><option value="true">إجباري (يغلق المجموعة التالية)</option><option value="false">اختياري</option></select></label>
+            <label class="field">نسبة النجاح %<input id="spass" type="number" min="1" max="100" style="width:110px"></label>
+          </div>
+          <button class="btn" id="ssave" style="margin-top:14px">حفظ</button>
+        </div>
+        <div class="card">
+          <h3>واجهة التطبيق</h3>
+          <label class="field">رسالة تظهر في الشاشة الرئيسية (اتركها فارغة لإخفائها)
+            <textarea id="smsg" style="min-height:80px" placeholder="مثال: أُضيف المستوى الثاني، ابدأه الآن!"></textarea></label>
+          <div class="field" style="margin-top:14px">المستويات المقفلة (يظهر عليها «قريبًا»)</div>
+          <div class="checks" id="slocks" style="margin-top:8px"></div>
+          <button class="btn" id="suisave" style="margin-top:14px">حفظ إعدادات الواجهة</button>
+        </div>
+        <div class="card" id="backupCard" hidden>
+          <h3>النسخة الاحتياطية</h3>
+          <p class="muted" style="margin-top:0;line-height:1.8">يحفظ ملفًا على جهازك فيه كل المفاتيح والمستخدمين وتقدّمهم والإعدادات. يُنصح بتحميله مرة كل أسبوع.</p>
+          <button class="btn" id="sbackup">⬇ تحميل نسخة احتياطية</button>
+          <div id="sbackuplog" class="muted" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h3>المشرفون</h3>
+          <p class="muted" style="margin-top:0;line-height:1.8" id="ahint"></p>
+          <div class="row" id="aaddrow" hidden><input id="aemail" class="en" type="email" placeholder="email@example.com" style="flex:1"><button class="btn" id="aadd">＋ إضافة</button></div>
+          <div id="alist" style="margin-top:12px"></div>
+        </div>
+        <div class="card">
+          <h3>الأمان</h3>
+          <p class="muted" style="margin-top:0;line-height:1.8" id="secInfo"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-EG') : '—';
+const num = n => Number(n||0).toLocaleString('ar-EG');
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
+function keyState(k){ if(k.status==='suspended')return'suspended'; if(k.status==='new')return'new'; return new Date(k.expires_at)<new Date()?'expired':'active'}
+const stateName={new:'جديد',active:'مفعّل',expired:'منتهٍ',suspended:'موقوف'};
+const isLocal=['localhost','127.0.0.1'].includes(location.hostname);
+function view(id){ for(const v of ['vLogin','vEnroll','vMfa','vNotAdmin','vApp']) $('#'+v).hidden = v!==id; }
+async function logout(){ await db.auth.signOut(); location.reload(); }
+
+// ================= sign in: email code → admin check → 2-step =================
+async function boot(){
+  const {data:{session}} = await db.auth.getSession();
+  if(!session){ view('vLogin'); return; }
+  let {data:p} = await db.from('profiles').select('is_admin').eq('id',session.user.id).maybeSingle();
+  if(!p){ await db.from('profiles').insert({id:session.user.id, email:session.user.email}); p={is_admin:false}; }
+  if(!p.is_admin){
+    $('#nasql').textContent=`update public.profiles set is_admin = true where id = '${session.user.id}';`;
+    view('vNotAdmin'); return;
+  }
+  // 2-step verification (authenticator app)
+  const {data:aal} = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal?.currentLevel !== 'aal2'){
+    const {data:f} = await db.auth.mfa.listFactors();
+    const verified = (f?.totp||[]).find(x=>x.status==='verified');
+    if(verified){ MFA_FACTOR=verified.id; view('vMfa'); setTimeout(()=>$('#mcode').focus(),50); return; }
+    await startEnroll(f); return;
+  }
+  $('#whoami').textContent=session.user.email;
+  $('#secureBadge').textContent='🔐 دخول محمي بخطوتين';
+  view('vApp');
+  show('dash');
+}
+let sent=false;
+$('#lbtn').onclick = async () => {
+  const email=$('#lemail').value.trim().toLowerCase();
+  if(!email) return toast('اكتب البريد أولًا');
+  if(!sent){
+    $('#lbtn').disabled=true;
+    // only the owner and admins receive a code; any other email is refused before anything is sent
+    const {data:allowed}=await db.rpc('panel_email_allowed',{p_email:email});
+    if(!allowed){ $('#lbtn').disabled=false; return toast('هذا البريد غير مصرّح له بدخول لوحة التحكم'); }
+    const {error}=await db.auth.signInWithOtp({email, options:{shouldCreateUser:false}});
+    $('#lbtn').disabled=false;
+    if(error) return toast(error.message);
+    sent=true; $('#lcodebox').hidden=false; $('#lbtn').textContent='دخول'; $('#lcode').focus(); toast('أُرسل الرمز إلى بريدك');
+  } else {
+    const {error}=await db.auth.verifyOtp({email, token:$('#lcode').value.trim(), type:'email'});
+    if(error) return toast('الرمز غير صحيح أو انتهت صلاحيته');
+    boot();
+  }
+};
+$('#lcode').onkeydown=e=>{if(e.key==='Enter')$('#lbtn').click()};
+
+let MFA_FACTOR=null;
+async function startEnroll(f){
+  // remove half-finished setups, then create a fresh one
+  for(const x of (f?.all||[]).filter(x=>x.status!=='verified')) await db.auth.mfa.unenroll({factorId:x.id});
+  const {data,error}=await db.auth.mfa.enroll({factorType:'totp', friendlyName:'Fluent admin', issuer:'Fluent'});
+  if(error){ toast(error.message); view('vLogin'); return; }
+  MFA_FACTOR=data.id;
+  $('#eqr').src=data.totp.qr_code;
+  $('#esecret').textContent=data.totp.secret;
+  view('vEnroll');
+}
+async function verifyCode(code){
+  const {error}=await db.auth.mfa.challengeAndVerify({factorId:MFA_FACTOR, code:code.trim()});
+  if(error){ toast('الرمز غير صحيح، جرّب الرمز الجديد في التطبيق'); return false; }
+  return true;
+}
+$('#ebtn').onclick=async()=>{ if(await verifyCode($('#ecode').value)){ toast('تم تفعيل التحقق بخطوتين ✅'); boot(); } };
+$('#mbtn').onclick=async()=>{ if(await verifyCode($('#mcode').value)) boot(); };
+$('#ecode').onkeydown=e=>{if(e.key==='Enter')$('#ebtn').click()};
+$('#mcode').onkeydown=e=>{if(e.key==='Enter')$('#mbtn').click()};
+
+// ================= tabs =================
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+function show(tab){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!==tab);
+  ({dash:loadDash,keys:loadKeys,users:loadUsers,content:loadContent,settings:loadSettings})[tab]();
+  window.scrollTo({top:0});
+}
+
+// ================= dashboard =================
+Chart.defaults.font.family='Almarai'; Chart.defaults.color='#9a968f'; Chart.defaults.borderColor='#26262a';
+const CH={};
+function chart(id,cfg){ CH[id]?.destroy(); CH[id]=new Chart($('#'+id),cfg); }
+async function loadDash(){
+  $('#dashDate').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const [{data:keys},{data:users}] = await Promise.all([db.from('license_keys').select('*'), db.rpc('admin_users')]);
+  const k=keys||[], u=users||[];
+  const st={new:0,active:0,expired:0,suspended:0}; k.forEach(x=>st[keyState(x)]++);
+  const sales=k.filter(x=>x.status!=='new').reduce((a,x)=>a+Number(x.price||0),0);
+  const monthAgo=Date.now()-30*864e5;
+  const salesMonth=k.filter(x=>x.activated_at&&new Date(x.activated_at)>monthAgo).reduce((a,x)=>a+Number(x.price||0),0);
+  const activeToday=u.filter(x=>x.last_active&&Date.now()-new Date(x.last_active)<864e5).length;
+  const active7=u.filter(x=>x.last_active&&Date.now()-new Date(x.last_active)<7*864e5).length;
+  const soon=k.filter(x=>keyState(x)==='active'&&new Date(x.expires_at)-Date.now()<7*864e5);
+  const minutes=u.reduce((a,x)=>a+Number(x.seconds||0),0)/60;
+  $('#kpis').innerHTML=[
+    ['💰','إجمالي المبيعات',num(sales),'مبيعات آخر 30 يومًا: '+num(salesMonth),'hot'],
+    ['🔑','اشتراكات فعّالة',num(st.active),'مفاتيح غير مستخدمة: '+num(st.new)],
+    ['👥','المستخدمون',num(u.length),'نشطون اليوم: '+num(activeToday)+' · هذا الأسبوع: '+num(active7)],
+    ['⏳','تنتهي خلال 7 أيام',num(soon.length),'تواصل معهم للتجديد'],
+    ['⏱','وقت التعلم الكلي',num(Math.round(minutes/60))+' س',num(Math.round(minutes))+' دقيقة'],
+  ].map(([i,a,b,c,h])=>`<div class="card kpi ${h||''}"><div class="k">${i} ${a}</div><div class="v">${b}</div><div class="s">${c}</div></div>`).join('');
+
+  // activations + sales per day (last 30 days)
+  const days=[...Array(30)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-29+i);return d});
+  const acts=days.map(d=>k.filter(x=>x.activated_at&&new Date(x.activated_at).toDateString()===d.toDateString()));
+  chart('chActs',{type:'bar',data:{labels:days.map(d=>d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'})),
+    datasets:[{label:'تفعيلات',data:acts.map(a=>a.length),backgroundColor:'#ff7a1a',borderRadius:6,yAxisID:'y'},
+              {label:'مبيعات',type:'line',data:acts.map(a=>a.reduce((s,x)=>s+Number(x.price||0),0)),borderColor:'#ffb36b',backgroundColor:'#ffb36b',tension:.35,pointRadius:0,yAxisID:'y1'}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8}},y:{beginAtZero:true,ticks:{precision:0}},y1:{beginAtZero:true,position:'right',grid:{display:false}}}}});
+  chart('chKeys',{type:'doughnut',data:{labels:['مفعّل','جديد','منتهٍ','موقوف'],datasets:[{data:[st.active,st.new,st.expired,st.suspended],backgroundColor:['#3fbf7f','#5b8def','#5e5b57','#e5484d'],borderWidth:0}]},
+    options:{maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{boxWidth:10}}}}});
+  const sum=f=>u.reduce((a,x)=>a+Number(x[f]||0),0);
+  chart('chLearn',{type:'bar',data:{labels:['درسها الطلاب','أتقنوها','في «ذكّرني»'],datasets:[{data:[sum('studied'),sum('mastered'),sum('review')],backgroundColor:['#5b8def','#3fbf7f','#ff7a1a'],borderRadius:8}]},
+    options:{maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{grid:{display:false}}}}});
+  $('#expiring').innerHTML=soon.length?`<div class="tbl" style="border:0"><table style="min-width:0"><tbody>${soon.sort((a,b)=>new Date(a.expires_at)-new Date(b.expires_at)).map(x=>`<tr><td class="code" onclick="copy('${x.code}')">${x.code}</td><td class="muted">${esc(x.note)||esc(x.device_name)||''}</td><td>${fmtDate(x.expires_at)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">لا توجد اشتراكات تنتهي هذا الأسبوع 👌</div>';
+}
+function copy(t){navigator.clipboard?.writeText(t);toast('نُسخ: '+t)}
+
+// ================= keys =================
+let KEYS=[];
+async function loadKeys(){
+  const {data,error}=await db.from('license_keys').select('*').order('created_at',{ascending:false});
+  if(error) return toast(error.message);
+  KEYS=data; renderKeys();
+}
+function renderKeys(){
+  const q=$('#kq').value.trim().toLowerCase(), f=$('#kf').value;
+  const rows=KEYS.filter(k=>(!f||(f==='trial'?k.is_trial:keyState(k)===f))&&(!q||[k.code,k.note,k.device_name].join(' ').toLowerCase().includes(q)));
+  KROWS=rows;
+  $('#ktable').innerHTML=`<thead><tr><th style="width:34px"><input type="checkbox" class="ck" ${rows.length&&rows.every(k=>SEL.has(k.id))?'checked':''} onchange="selAll(this.checked)" title="تحديد الكل"></th><th>المفتاح</th><th>الحالة</th><th>المدة</th><th>السعر</th><th>الجهاز</th><th>التفعيل</th><th>الانتهاء</th><th>ملاحظة</th><th></th></tr></thead><tbody>`+
+  (rows.length?rows.map(k=>{const s=keyState(k);return `<tr class="${SEL.has(k.id)?'sel':''}">
+    <td><input type="checkbox" class="ck" ${SEL.has(k.id)?'checked':''} onchange="toggleSel('${k.id}',this.checked)"></td>
+    <td class="code" title="نسخ" onclick="copy('${k.code}')">${k.code}</td>
+    <td><span class="pill p-${s}">${stateName[s]}</span>${k.is_trial?' <span class="pill" style="background:#ff7a1a22;color:var(--ember)">تجريبي</span>':''}</td>
+    <td>${k.duration_days} يوم</td><td>${num(k.price)}</td>
+    <td class="muted">${esc(k.device_name)||'—'}</td><td>${fmtDate(k.activated_at)}</td><td>${fmtDate(k.expires_at)}</td>
+    <td class="muted">${esc(k.note)}</td>
+    <td>
+      ${k.status!=='new'?`<button class="btn ghost sm" onclick="extendKey('${k.id}')">تمديد</button>`:''}
+      ${k.device_id?`<button class="btn ghost sm" onclick="unbind('${k.id}')">فك الجهاز</button>`:''}
+      ${k.status==='suspended'?`<button class="btn ghost sm" onclick="setStatus('${k.id}','${k.activated_at?'active':'new'}')">تفعيل</button>`:`<button class="btn ghost sm red" onclick="setStatus('${k.id}','suspended')">إيقاف</button>`}
+      <button class="btn ghost sm red" onclick="delKey('${k.id}')">حذف</button>
+    </td></tr>`}).join(''):'<tr><td colspan="10" class="empty">لا توجد مفاتيح مطابقة</td></tr>')+'</tbody>';
+  updateBulk();
+}
+// ---------- select many keys ----------
+const SEL=new Set(); let KROWS=[];
+function updateBulk(){
+  for(const id of [...SEL]) if(!KEYS.some(k=>k.id===id)) SEL.delete(id);
+  $('#kbulk').hidden=SEL.size===0;
+  $('#kselcount').textContent=`محدد: ${num(SEL.size)} مفتاح`;
+}
+function toggleSel(id,on){ on?SEL.add(id):SEL.delete(id); renderKeys(); }
+function selAll(on){ KROWS.forEach(k=>on?SEL.add(k.id):SEL.delete(k.id)); renderKeys(); }
+function clearSel(){ SEL.clear(); renderKeys(); }
+function copySelected(){ copy(KEYS.filter(k=>SEL.has(k.id)).map(k=>k.code).join('\n')); }
+async function bulkDelete(){
+  const n=SEL.size; if(!n) return;
+  const used=KEYS.filter(k=>SEL.has(k.id)&&k.status!=='new').length;
+  if(!confirm(`حذف ${n} مفتاح نهائيًا؟ لا يمكن التراجع.`+(used?`\n⚠️ منها ${used} مفتاح مستخدم: أصحابها سيفقدون اشتراكهم.`:''))) return;
+  const {error}=await db.from('license_keys').delete().in('id',[...SEL]);
+  toast(error?error.message:`حُذف ${n} مفتاح`); if(!error) SEL.clear(); loadKeys();
+}
+async function bulkSetStatus(status){
+  const n=SEL.size; if(!n||!confirm(`إيقاف ${n} مفتاح؟`)) return;
+  const {error}=await db.from('license_keys').update({status}).in('id',[...SEL]);
+  toast(error?error.message:`أُوقف ${n} مفتاح`); if(!error) SEL.clear(); loadKeys();
+}
+$('#kq').oninput=renderKeys; $('#kf').onchange=renderKeys;
+$('#kgen').onclick=async()=>{
+  const {data,error}=await db.rpc('admin_create_keys',{p_count:+$('#kcount').value,p_days:+$('#kdays').value,p_price:+$('#kprice').value,p_note:$('#knote').value});
+  if(error) return toast(error.message);
+  const codes=data.map(k=>k.code).join('\n');
+  $('#knew').textContent=codes; $('#knewbox').style.display='block';
+  navigator.clipboard?.writeText(codes);
+  toast(`أُنشئ ${data.length} مفتاح ونُسخ`); loadKeys();
+};
+$('#tgen').onclick=async()=>{
+  const {data,error}=await db.rpc('admin_create_trial_keys',{p_count:+$('#tcount').value,p_note:$('#tnote').value});
+  if(error) return toast(error.message);
+  const codes=data.map(k=>k.code).join('\n');
+  $('#knew').textContent=codes; $('#knewbox').style.display='block';
+  navigator.clipboard?.writeText(codes);
+  toast(`أُنشئ ${data.length} كود تجريبي ونُسخ`); loadKeys();
+};
+async function extendKey(id){
+  const d=prompt('عدد الأيام المضافة؟','30'); if(!d) return;
+  const k=KEYS.find(x=>x.id===id);
+  const base=new Date(Math.max(Date.now(),new Date(k.expires_at||Date.now())));
+  base.setDate(base.getDate()+(+d));
+  const {error}=await db.from('license_keys').update({expires_at:base.toISOString(),status:'active'}).eq('id',id);
+  toast(error?error.message:'تم التمديد'); loadKeys();
+}
+async function unbind(id){
+  if(!confirm('فك ارتباط الجهاز؟ سيتمكن العميل من تفعيل المفتاح نفسه على جهازه الجديد مع الاحتفاظ بتاريخ الانتهاء.'))return;
+  const {error}=await db.from('license_keys').update({device_id:null,device_name:null}).eq('id',id);
+  toast(error?error.message:'تم فك الارتباط'); loadKeys();
+}
+async function setStatus(id,status){const {error}=await db.from('license_keys').update({status}).eq('id',id);toast(error?error.message:'تم');loadKeys()}
+async function delKey(id){if(!confirm('حذف المفتاح نهائيًا؟ لا يمكن التراجع.'))return;const {error}=await db.from('license_keys').delete().eq('id',id);toast(error?error.message:'حُذف');loadKeys()}
+
+// ================= users =================
+let USERS=[];
+
+// ----- country flags (flag images: Windows does not draw flag emoji) -----
+const REGION_AR=(()=>{try{return new Intl.DisplayNames(['ar'],{type:'region'})}catch(e){return null}})();
+function countryName(cc){ if(!cc) return ''; try{return REGION_AR?REGION_AR.of(cc):cc}catch(e){return cc} }
+function flagImg(cc,w=20){ return cc&&/^[A-Z]{2}$/.test(cc)?`<img class="flag" src="https://flagcdn.com/w40/${cc.toLowerCase()}.png" width="${w}" height="${Math.round(w*.75)}" alt="${cc}" loading="lazy">`:''; }
+function flagCell(cc){ return cc?`<span class="cflag">${flagImg(cc)}<span>${esc(countryName(cc))}</span></span>`:'<span class="muted">—</span>'; }
+function seenCell(t){ if(!t) return '—'; const m=(Date.now()-new Date(t))/60e3;
+  if(m<10) return '<span class="online"><i></i>متصل الآن</span>';
+  if(m<60) return `منذ ${num(Math.round(m))} دقيقة`; if(m<1440) return `منذ ${num(Math.round(m/60))} ساعة`; return fmtDate(t); }
+function renderCountries(){ const el=$('#ucountries'); if(!el) return; const c={};
+  USERS.forEach(u=>{ if(u.country) c[u.country]=(c[u.country]||0)+1; });
+  const list=Object.entries(c).sort((a,b)=>b[1]-a[1]);
+  el.innerHTML=list.length?list.map(([cc,n])=>`<span class="cchip" onclick="$('#uq').value='${cc}';renderUsers()">${flagImg(cc,18)} ${esc(countryName(cc))} <b>${num(n)}</b></span>`).join(''):'<span class="muted">ستظهر الدول بعد أن يفتح المستخدمون التطبيق</span>'; }
+async function loadUsers(){
+  const {data,error}=await db.rpc('admin_users'); if(error) return toast(error.message);
+  USERS=data; renderUsers();
+}
+function renderUsers(){
+  const q=$('#uq').value.trim().toLowerCase();
+  const rows=USERS.filter(u=>!q||[u.full_name,u.email,u.phone,u.key_code,u.country,countryName(u.country),u.phone_model,u.last_ip].join(' ').toLowerCase().includes(q));
+  const online=USERS.filter(u=>u.last_seen&&Date.now()-new Date(u.last_seen)<10*60e3).length;
+  $('#ucount').textContent=`${num(USERS.length)} مستخدم، منهم ${num(USERS.filter(u=>u.is_guest).length)} ضيف · متصل الآن: ${num(online)}`;
+  renderCountries();
+  $('#utable').innerHTML=`<thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنس</th><th>درس</th><th>أتقن</th><th>للمراجعة</th><th>وقت التعلم</th><th>المفتاح</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>الإصدار</th><th>ينتهي</th><th>آخر ظهور</th></tr></thead><tbody>`+
+  (rows.length?rows.map(u=>`<tr><td>${u.is_guest?'<span class="pill p-guest">ضيف</span>':esc(u.full_name)}</td><td class="en">${esc(u.email)}</td><td class="en">${esc(u.phone)}</td>
+    <td>${u.age??'—'}</td><td>${u.gender==='male'?'ذكر':u.gender==='female'?'أنثى':'—'}</td>
+    <td>${num(u.studied)}</td><td style="color:var(--ok)">${num(u.mastered)}</td><td style="color:var(--ember)">${num(u.review)}</td>
+    <td>${num(Math.round(u.seconds/60))} د</td><td class="code" onclick="${u.key_code?`copy('${u.key_code}')`:''}">${u.key_code??'—'}</td><td>${flagCell(u.country)}</td><td class="muted" title="${esc(u.user_agent)}">${esc(u.phone_model||u.device_name)||'—'}</td>
+    <td class="en muted">${esc(u.last_ip)||'—'}</td><td class="en muted">${esc(u.app_version)||'—'}</td>
+    <td>${fmtDate(u.expires_at)}</td><td>${seenCell(u.last_seen||u.last_active)}</td></tr>`).join(''):'<tr><td colspan="16" class="empty">لا يوجد مستخدمون مطابقون</td></tr>')+'</tbody>';
+}
+$('#uq').oninput=renderUsers;
+
+// ================= content =================
+async function loadContent(){
+  const {data}=await db.rpc('level_counts'); const m=Object.fromEntries((data||[]).map(r=>[r.level,r.total]));
+  $('#ccounts').innerHTML=['A1','A2','B1','B2','C1','C2'].map(l=>{const n=m[l]||0;return `<div class="card"><div class="muted en" style="text-align:right">${l}</div><div class="v">${num(n)}<span class="dim" style="font-size:13px"> / ١٠٠٠</span></div><div class="bar"><i style="width:${Math.min(100,n/10)}%"></i></div></div>`}).join('');
+  $('#cbundled').hidden=!isLocal; // the ready-made files only exist on the owner's computer
+}
+async function uploadSentences(name, arr){
+  for(let i=0;i<arr.length;i+=200){
+    const chunk=arr.slice(i,i+200).map(s=>({id:s.id,level:s.level,idx:s.idx,topic:s.topic,en:s.en,ar:s.ar,words:s.words,explain:s.explain,audio_url:s.audio_url??null,updated_at:new Date().toISOString()}));
+    const {error}=await db.from('sentences').upsert(chunk);
+    if(error){ $('#clog').textContent=`${name}: ${error.message}`; return false; }
+    $('#clog').textContent=`${name}: ${Math.min(i+200,arr.length)} / ${arr.length}`;
+  }
+  return true;
+}
+$('#cbundled').onclick=async()=>{
+  let done=[];
+  for(const l of ['A1','A2','B1','B2','C1','C2']){
+    const r=await fetch(`../content/${l}.json`,{cache:'no-store'}).catch(()=>null);
+    if(!r||!r.ok) continue;
+    if(!await uploadSentences(l, await r.json())) return;
+    done.push(l);
+  }
+  toast(done.length?`رُفع: ${done.join('، ')}`:'لم يُعثر على ملفات المحتوى'); loadContent();
+};
+$('#cfile').onchange=async e=>{
+  for(const f of e.target.files){ if(!await uploadSentences(f.name, JSON.parse(await f.text()))) return; }
+  toast('اكتمل الرفع'); loadContent();
+};
+$('#cload').onclick=async()=>{
+  const {data,error}=await db.from('sentences').select('*').eq('id',$('#cid').value.trim().toUpperCase()).maybeSingle();
+  if(error||!data) return toast('غير موجودة');
+  $('#cjson').value=JSON.stringify(data,null,2);
+};
+$('#csave').onclick=async()=>{
+  let s; try{s=JSON.parse($('#cjson').value)}catch{return toast('JSON غير صالح')}
+  s.updated_at=new Date().toISOString();
+  const {error}=await db.from('sentences').upsert(s); toast(error?error.message:'حُفظت');
+};
+
+// ================= backup =================
+// Downloads everything that lives only on the server (keys, users, progress).
+// Sentences are not included: their source of truth is the content/ folder.
+async function fetchAll(table){
+  const rows=[]; const page=1000;
+  for(let from=0;;from+=page){
+    const {data,error}=await db.from(table).select('*').range(from,from+page-1);
+    if(error) throw new Error(`${table}: ${error.message}`);
+    rows.push(...data);
+    if(data.length<page) return rows;
+  }
+}
+$('#sbackup').onclick=async()=>{
+  const log=$('#sbackuplog'); log.textContent='جارٍ التحميل…';
+  try{
+    const backup={created_at:new Date().toISOString()};
+    for(const t of ['license_keys','profiles','progress','quiz_results','dictionary','study_time','app_settings']){
+      backup[t]=await fetchAll(t); log.textContent=`${t}: ${backup[t].length}`;
+    }
+    const blob=new Blob([JSON.stringify(backup,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`fluent-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    log.textContent=`تم: ${backup.license_keys.length} مفتاح، ${backup.profiles.length} مستخدم، ${backup.progress.length} سجل تقدم.`;
+    toast('حُفظت النسخة الاحتياطية');
+  }catch(e){ log.textContent='تعذّر التحميل: '+e.message; }
+};
+
+// ================= settings =================
+async function loadSettings(){
+  const {data}=await db.from('app_settings').select('*'); const m=Object.fromEntries(data.map(r=>[r.key,r.value]));
+  $('#squiz').value=String(m.quiz_mandatory); $('#spass').value=m.quiz_pass_percent;
+  $('#smsg').value=m.home_message||'';
+  const locked=Array.isArray(m.locked_levels)?m.locked_levels:[];
+  $('#slocks').innerHTML=['A1','A2','B1','B2','C1','C2'].map(l=>
+    `<label><input type="checkbox" value="${l}" ${locked.includes(l)?'checked':''}> <span class="en">${l}</span></label>`).join('');
+  loadAdmins();
+  $('#secInfo').innerHTML='🔐 الدخول للوحة يحتاج <b>رمز البريد</b> ثم <b>رمز تطبيق Google Authenticator</b>.<br>كل العمليات تتحقق منها الخوادم نفسها، فلا يستطيع أحد غير المشرف تنفيذها حتى لو حصل على هذه الصفحة.';
+}
+// ---------- admins ----------
+async function loadAdmins(){
+  const {data,error}=await db.rpc('admin_list'); if(error) return toast(error.message);
+  const me=(await db.auth.getUser()).data.user?.id;
+  const iAmOwner=data.some(a=>a.id===me&&a.is_owner);
+  $('#aaddrow').hidden=!iAmOwner;
+  $('#backupCard').hidden=!iAmOwner; // backups are for the owner only
+  $('#ahint').textContent=iAmOwner
+    ?'لإضافة مشرف: يُنشئ حسابًا ببريده في تطبيق Fluent (أو نسخة المتصفح) مرة واحدة، ثم تكتب بريده هنا وتضغط «إضافة». بعدها يفتح رابط اللوحة ويدخل ببريده ويفعّل Google Authenticator على هاتفه. أي بريد آخر لا يصله رمز الدخول إلى اللوحة.'
+    :'المالك وحده يستطيع إضافة المشرفين أو إزالتهم.';
+  $('#alist').innerHTML=data.map(a=>`<div class="row" style="justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)">
+    <div><span class="en">${esc(a.email)}</span>${a.is_owner?' <span class="pill p-active">👑 المالك</span>':''}${a.id===me?' <span class="dim">(أنت)</span>':''}<br>
+      <small style="color:${a.has_2fa?'var(--ok)':'var(--ember)'}">${a.has_2fa?'🔐 التحقق بخطوتين مفعّل':'⏳ لم يفعّل Google Authenticator بعد'}</small></div>
+    ${iAmOwner&&!a.is_owner?`<button class="btn ghost sm red" onclick="setAdmin('${esc(a.email)}',false)">إزالة</button>`:''}</div>`).join('');
+}
+async function setAdmin(email,on){
+  if(!email) return toast('اكتب البريد أولًا');
+  if(!on&&!confirm(`إزالة صلاحية المشرف من ${email}؟`)) return;
+  const {data,error}=await db.rpc('admin_set_admin',{p_email:email,p_on:on});
+  if(error) return toast(error.message);
+  toast({ok:on?'أُضيف المشرف ✅':'أُزيلت الصلاحية',not_found:'لا يوجد حساب بهذا البريد: اطلب منه إنشاء حساب في تطبيق Fluent أولًا ثم أضفه',self:'لا يمكنك إزالة نفسك',not_owner:'المالك وحده يستطيع ذلك'}[data]);
+  if(data==='ok'){ $('#aemail').value=''; loadAdmins(); }
+}
+$('#aadd').onclick=()=>setAdmin($('#aemail').value.trim(),true);
+$('#suisave').onclick=async()=>{
+  const locked=[...document.querySelectorAll('#slocks input:checked')].map(i=>i.value);
+  const {error}=await db.from('app_settings').upsert([
+    {key:'home_message',value:$('#smsg').value.trim()},
+    {key:'locked_levels',value:locked}]);
+  toast(error?error.message:'حُفظت إعدادات الواجهة');
+};
+$('#ssave').onclick=async()=>{
+  const {error}=await db.from('app_settings').upsert([{key:'quiz_mandatory',value:$('#squiz').value==='true'},{key:'quiz_pass_percent',value:+$('#spass').value}]);
+  toast(error?error.message:'حُفظت الإعدادات');
+};
+
+boot();
+</script>
+</body>
+</html>
