@@ -18,7 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--bg:#0b0b0c;--s1:#131315;--s2:#1a1a1d;--s3:#222226;--line:#26262a;--t:#edeae4;--t2:#9a968f;--t3:#5e5b57;
-  --ember:#ff7a1a;--ember2:#ffb36b;--emberSoft:rgba(255,122,26,.13);--ok:#3fbf7f;--bad:#e5484d;--blue:#5b8def;--r:18px}
+  --ember:#ff7a1a;--ember2:#ffb36b;--emberSoft:rgba(255,122,26,.13);--ok:#3fbf7f;--bad:#e5484d;--blue:#5b8def;--gold:#f2c14e;--r:18px}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .wcodes{display:flex;flex-wrap:wrap;gap:5px;max-width:420px}.wcode{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;direction:ltr;background:rgba(229,72,77,.1);border:1px solid rgba(229,72,77,.3);color:var(--t);padding:3px 7px;border-radius:7px;white-space:nowrap}.wcode b{color:var(--bad);margin-inline-end:5px;font-weight:700}
@@ -92,6 +92,10 @@ th{color:var(--t2);font-weight:400;font-size:12px;background:var(--s1);position:
 tr:last-child td{border-bottom:0}
 tbody tr:hover{background:rgba(255,255,255,.02)}
 .pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px}
+.vippill{background:linear-gradient(135deg,#ffd76a33,#c9952c33);color:var(--gold);border:1px solid #e6b54a66;font-weight:700}
+.vipcard{border-color:#e6b54a55;background:linear-gradient(160deg,#e6b54a12,transparent 60%),var(--s1)}
+.vipcard h3{color:var(--gold)}
+.btn.vipbtn{background:linear-gradient(135deg,#ffe08a,#e6b54a 55%,#b9861f);color:#1a1200}
 .p-new{background:#5b8def22;color:var(--blue)}.p-active{background:#3fbf7f22;color:var(--ok)}
 .p-suspended{background:#e5484d22;color:var(--bad)}.p-expired{background:#ffffff11;color:var(--t2)}.p-guest{background:#ffffff11;color:var(--t2)}
 .code{font-family:ui-monospace,Consolas,monospace;letter-spacing:.5px;cursor:pointer;color:var(--ember2)}
@@ -238,6 +242,16 @@ tbody tr.sel{background:rgba(255,122,26,.08)}
         </div>
         <div class="newkeys" id="knewbox"><span class="muted">المفاتيح الجديدة (نُسخت تلقائيًا):</span><pre id="knew"></pre></div>
       </div>
+      <div class="card vipcard" style="margin-top:12px">
+        <h3>♛ كود مدى الحياة (VIP)</h3>
+        <p class="muted" style="margin-top:0;line-height:1.8">يبدأ بـ <span class="en">VIP</span> ولا ينتهي أبدًا. صاحبه يرى احتفالًا ذهبيًا خاصًا عند التفعيل، وشارة VIP ذهبية في التطبيق، ورقم عضويته (عضو VIP رقم 1، 2، …).</p>
+        <div class="row">
+          <label class="field">العدد<input id="vcount" type="number" value="1" min="1" max="100" style="width:90px"></label>
+          <label class="field">السعر<input id="vprice" type="number" value="0" style="width:110px"></label>
+          <label class="field" style="flex:1;min-width:180px">ملاحظة / اسم العميل<input id="vnote"></label>
+          <button class="btn vipbtn" id="vgen">♛ إنشاء كود مدى الحياة</button>
+        </div>
+      </div>
       <div class="card" style="margin-top:12px">
         <h3>🎁 كود تجريبي (7 أيام)</h3>
         <p class="muted" style="margin-top:0;line-height:1.8">يبدأ بـ <span class="en">TRIAL-7D</span> ومجاني. يعمل مرة واحدة فقط لكل جهاز ولكل حساب: إذا جرّبه شخص ثم طلب كودًا تجريبيًا آخر بحساب جديد على الجهاز نفسه، فلن يعمل، ويجب أن يشتري مفتاحًا حقيقيًا.</p>
@@ -263,7 +277,7 @@ tbody tr.sel{background:rgba(255,122,26,.08)}
       </div>
       <div class="toolbar">
         <input id="kq" placeholder="🔍 بحث بالمفتاح أو الملاحظة أو الجهاز">
-        <select id="kf"><option value="">كل الحالات</option><option value="trial">تجريبي فقط</option><option value="new">جديد</option><option value="active">مفعّل</option><option value="expired">منتهٍ</option><option value="suspended">موقوف</option></select>
+        <select id="kf"><option value="">كل الحالات</option><option value="trial">تجريبي فقط</option><option value="vip">مدى الحياة (VIP) فقط</option><option value="new">جديد</option><option value="active">مفعّل</option><option value="expired">منتهٍ</option><option value="suspended">موقوف</option></select>
       </div>
       <div class="bulkbar" id="kbulk" hidden>
         <b id="kselcount"></b>
@@ -358,6 +372,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-EG') : '—';
 const num = n => Number(n||0).toLocaleString('ar-EG');
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
+function isVip(u){ return (u.key_code||'').startsWith('VIP-') && u.expires_at && new Date(u.expires_at).getFullYear()>=2099; }
 function keyState(k){ if(k.status==='suspended')return'suspended'; if(k.status==='new')return'new'; return new Date(k.expires_at)<new Date()?'expired':'active'}
 const stateName={new:'جديد',active:'مفعّل',expired:'منتهٍ',suspended:'موقوف'};
 const isLocal=['localhost','127.0.0.1'].includes(location.hostname);
@@ -487,18 +502,18 @@ async function loadKeys(){
 }
 function renderKeys(){
   const q=$('#kq').value.trim().toLowerCase(), f=$('#kf').value;
-  const rows=KEYS.filter(k=>(!f||(f==='trial'?k.is_trial:keyState(k)===f))&&(!q||[k.code,k.note,k.device_name].join(' ').toLowerCase().includes(q)));
+  const rows=KEYS.filter(k=>(!f||(f==='trial'?k.is_trial:f==='vip'?k.is_lifetime:keyState(k)===f))&&(!q||[k.code,k.note,k.device_name].join(' ').toLowerCase().includes(q)));
   KROWS=rows;
   $('#ktable').innerHTML=`<thead><tr><th style="width:34px"><input type="checkbox" class="ck" ${rows.length&&rows.every(k=>SEL.has(k.id))?'checked':''} onchange="selAll(this.checked)" title="تحديد الكل"></th><th>المفتاح</th><th>الحالة</th><th>المدة</th><th>السعر</th><th>الجهاز</th><th>التفعيل</th><th>الانتهاء</th><th>ملاحظة</th><th></th></tr></thead><tbody>`+
   (rows.length?rows.map(k=>{const s=keyState(k);return `<tr class="${SEL.has(k.id)?'sel':''}">
     <td><input type="checkbox" class="ck" ${SEL.has(k.id)?'checked':''} onchange="toggleSel('${k.id}',this.checked)"></td>
     <td class="code" title="نسخ" onclick="copy('${k.code}')">${k.code}</td>
-    <td><span class="pill p-${s}">${stateName[s]}</span>${k.is_trial?' <span class="pill" style="background:#ff7a1a22;color:var(--ember)">تجريبي</span>':''}</td>
-    <td>${k.duration_minutes?`<span class="pill" style="background:rgba(91,141,239,.15);color:var(--blue)">⏱ ${durText(k.duration_minutes)}</span>`:`${k.duration_days} يوم`}</td><td>${num(k.price)}</td>
-    <td class="muted">${esc(k.device_name)||'—'}</td><td>${fmtDate(k.activated_at)}</td><td>${fmtDate(k.expires_at)}</td>
+    <td><span class="pill p-${s}">${stateName[s]}</span>${k.is_trial?' <span class="pill" style="background:#ff7a1a22;color:var(--ember)">تجريبي</span>':''}${k.is_lifetime?' <span class="pill vippill">♛ VIP</span>':''}</td>
+    <td>${k.is_lifetime?'<span class="pill vippill">♾ مدى الحياة</span>':k.duration_minutes?`<span class="pill" style="background:rgba(91,141,239,.15);color:var(--blue)">⏱ ${durText(k.duration_minutes)}</span>`:`${k.duration_days} يوم`}</td><td>${num(k.price)}</td>
+    <td class="muted">${esc(k.device_name)||'—'}</td><td>${fmtDate(k.activated_at)}</td><td>${k.is_lifetime&&k.expires_at?'<span style="color:var(--gold)">لا ينتهي</span>':fmtDate(k.expires_at)}</td>
     <td class="muted">${esc(k.note)}</td>
     <td>
-      ${k.status!=='new'?`<button class="btn ghost sm" onclick="extendKey('${k.id}')">تمديد</button>`:''}
+      ${k.status!=='new'&&!k.is_lifetime?`<button class="btn ghost sm" onclick="extendKey('${k.id}')">تمديد</button>`:''}
       ${k.device_id?`<button class="btn ghost sm" onclick="unbind('${k.id}')">فك الجهاز</button>`:''}
       ${k.status==='suspended'?`<button class="btn ghost sm" onclick="setStatus('${k.id}','${k.activated_at?'active':'new'}')">تفعيل</button>`:`<button class="btn ghost sm red" onclick="setStatus('${k.id}','suspended')">إيقاف</button>`}
       <button class="btn ghost sm red" onclick="delKey('${k.id}')">حذف</button>
@@ -555,6 +570,14 @@ $('#cgen').onclick=async()=>{
   $('#knew').textContent=codes; $('#knewbox').style.display='block';
   navigator.clipboard?.writeText(codes);
   toast(`أُنشئ ${data.length} كود مدته ${durText(m)} ونُسخ`); loadKeys();
+};
+$('#vgen').onclick=async()=>{
+  const {data,error}=await db.rpc('admin_create_lifetime_keys',{p_count:+$('#vcount').value||1,p_price:+$('#vprice').value||0,p_note:$('#vnote').value});
+  if(error) return toast(error.message);
+  const codes=data.map(k=>k.code).join('\n');
+  $('#knew').textContent=codes; $('#knewbox').style.display='block';
+  navigator.clipboard?.writeText(codes);
+  toast(`أُنشئ ${data.length} كود مدى الحياة ♛ ونُسخ`); loadKeys();
 };
 $('#tgen').onclick=async()=>{
   const {data,error}=await db.rpc('admin_create_trial_keys',{p_count:+$('#tcount').value,p_note:$('#tnote').value});
@@ -635,12 +658,12 @@ function renderUsers(){
   $('#ucount').textContent=`${num(USERS.length)} مستخدم، منهم ${num(USERS.filter(u=>u.is_guest).length)} ضيف · متصل الآن: ${num(online)}`;
   renderCountries();
   $('#utable').innerHTML=`<thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنس</th><th>درس</th><th>أتقن</th><th>للمراجعة</th><th>وقت التعلم</th><th>المفتاح</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>الإصدار</th><th>ينتهي</th><th>آخر ظهور</th></tr></thead><tbody>`+
-  (rows.length?rows.map(u=>`<tr><td>${u.is_guest?'<span class="pill p-guest">ضيف</span>':esc(u.full_name)}</td><td class="en">${esc(u.email)}</td><td class="en">${esc(u.phone)}</td>
+  (rows.length?rows.map(u=>`<tr><td>${u.is_guest?'<span class="pill p-guest">ضيف</span>':esc(u.full_name)}${isVip(u)?' <span class="pill vippill">♛ VIP</span>':''}</td><td class="en">${esc(u.email)}</td><td class="en">${esc(u.phone)}</td>
     <td>${u.age??'—'}</td><td>${u.gender==='male'?'ذكر':u.gender==='female'?'أنثى':'—'}</td>
     <td>${num(u.studied)}</td><td style="color:var(--ok)">${num(u.mastered)}</td><td style="color:var(--ember)">${num(u.review)}</td>
     <td>${num(Math.round(u.seconds/60))} د</td><td class="code" onclick="${u.key_code?`copy('${u.key_code}')`:''}">${u.key_code??'—'}</td><td>${flagCell(u.country)}</td><td class="muted" title="${esc(u.user_agent)}">${esc(u.phone_model||u.device_name)||'—'}</td>
     <td class="en muted">${esc(u.last_ip)||'—'}</td><td class="en muted">${esc(u.app_version)||'—'}</td>
-    <td>${fmtDate(u.expires_at)}</td><td>${seenCell(u.last_seen||u.last_active)}</td></tr>`).join(''):'<tr><td colspan="16" class="empty">لا يوجد مستخدمون مطابقون</td></tr>')+'</tbody>';
+    <td>${isVip(u)?'<span style="color:var(--gold)">♾ مدى الحياة</span>':fmtDate(u.expires_at)}</td><td>${seenCell(u.last_seen||u.last_active)}</td></tr>`).join(''):'<tr><td colspan="16" class="empty">لا يوجد مستخدمون مطابقون</td></tr>')+'</tbody>';
 }
 $('#uq').oninput=renderUsers;
 
