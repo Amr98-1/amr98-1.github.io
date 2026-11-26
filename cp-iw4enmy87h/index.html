@@ -21,6 +21,8 @@
   --ember:#ff7a1a;--ember2:#ffb36b;--emberSoft:rgba(255,122,26,.13);--ok:#3fbf7f;--bad:#e5484d;--blue:#5b8def;--r:18px}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+.wcodes{display:flex;flex-wrap:wrap;gap:5px;max-width:420px}.wcode{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;direction:ltr;background:rgba(229,72,77,.1);border:1px solid rgba(229,72,77,.3);color:var(--t);padding:3px 7px;border-radius:7px;white-space:nowrap}.wcode b{color:var(--bad);margin-inline-end:5px;font-weight:700}
+
 .bancard{background:linear-gradient(180deg,rgba(229,72,77,.08),transparent);border:1px solid rgba(229,72,77,.35);border-radius:var(--r);padding:16px;margin:0 0 16px}
 .banhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.banhead b{color:var(--bad);font-size:16px}
 
@@ -603,11 +605,22 @@ async function loadBans(){
   BANS=data||[];
   $('#banCount').textContent=BANS.length?`${num(BANS.length)} محظور`:'لا يوجد محظورون حاليًا ✅';
   if(!BANS.length){ $('#banTable').innerHTML=''; return; }
-  $('#banTable').innerHTML=`<thead><tr><th></th><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>آخر كود كتبه</th><th>محاولات</th><th>تاريخ الحظر</th></tr></thead><tbody>`+
+  $('#banTable').innerHTML=`<thead><tr><th></th><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>الأكواد التي أدخلها</th><th>محاولات</th><th>تاريخ الحظر</th></tr></thead><tbody>`+
   BANS.map((b,i)=>`<tr><td><button class="btn sm" style="background:var(--ok);color:#06140c;font-weight:700" onclick="unban(${i})">فك الحظر</button></td>
     <td>${b.is_guest?'<span class="pill p-guest">ضيف</span>':esc(b.full_name)||'—'}</td><td class="en">${esc(b.email)||'—'}</td><td class="en">${esc(b.phone)||'—'}</td>
     <td>${flagCell(b.country)}</td><td class="muted" title="${esc(b.user_agent)}">${esc(b.phone_model)||'—'}</td><td class="en muted">${esc(b.last_ip)||'—'}</td>
-    <td class="code en">${esc(b.last_code)||'—'}</td><td>${num(b.fails)}</td><td>${fmtDate(b.banned_at)}</td></tr>`).join('')+'</tbody>';
+    <td>${codesCell(b,i)}</td><td>${num(b.fails)}</td><td>${fmtDate(b.banned_at)}</td></tr>`).join('')+'</tbody>';
+}
+function codesCell(b,i){
+  const list=Array.isArray(b.codes)?b.codes:[];
+  if(!list.length) return `<span class="code en">${esc(b.last_code)||'—'}</span>`;
+  const t=x=>{try{return new Date(x).toLocaleString('ar-EG',{hour:'2-digit',minute:'2-digit',second:'2-digit',day:'numeric',month:'numeric'})}catch(e){return ''}};
+  return `<div class="wcodes">${list.map((x,n)=>`<span class="wcode" title="${esc(t(x.t))}"><b>${n+1}</b>${esc(x.c)}</span>`).join('')}</div>
+    <button class="btn sm" style="background:var(--s3);color:var(--t);margin-top:6px" onclick="copyCodes(${i})">📋 نسخ الأكواد</button>`;
+}
+function copyCodes(i){
+  const b=BANS[i]; const list=(b.codes||[]).map((x,n)=>`${n+1}. ${x.c}  (${new Date(x.t).toLocaleString('ar-EG')})`).join('\n');
+  navigator.clipboard?.writeText(list); toast('نُسخت الأكواد');
 }
 async function unban(i){
   const b=BANS[i]; if(!b) return;
