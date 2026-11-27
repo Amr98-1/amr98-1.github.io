@@ -98,6 +98,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .btn.vipbtn{background:linear-gradient(135deg,#ffe08a,#e6b54a 55%,#b9861f);color:#1a1200}
 .p-new{background:#5b8def22;color:var(--blue)}.p-active{background:#3fbf7f22;color:var(--ok)}
 .p-suspended{background:#e5484d22;color:var(--bad)}.p-expired{background:#ffffff11;color:var(--t2)}.p-guest{background:#ffffff11;color:var(--t2)}
+.devbtn{display:inline-block;margin-top:5px;background:var(--s3);color:var(--ember);font-size:11.5px;white-space:nowrap}.subrow td{background:#ffffff06;font-size:13px}.subrow td:first-child{padding-inline-start:22px}
 .code{font-family:ui-monospace,Consolas,monospace;letter-spacing:.5px;cursor:pointer;color:var(--ember2)}
 .muted{color:var(--t2)}.dim{color:var(--t3)}
 .newkeys{margin-top:14px;display:none;background:var(--s2);border:1px dashed rgba(255,122,26,.5);border-radius:14px;padding:14px}
@@ -472,7 +473,7 @@ async function loadDash(){
   $('#kpis').innerHTML=[
     ['💰','إجمالي المبيعات',num(sales),'مبيعات آخر 30 يومًا: '+num(salesMonth),'hot'],
     ['🔑','اشتراكات فعّالة',num(st.active),'مفاتيح غير مستخدمة: '+num(st.new)],
-    ['👥','المستخدمون',num(u.length),'نشطون اليوم: '+num(activeToday)+' · هذا الأسبوع: '+num(active7)],
+    ['👥','المستخدمون',num(groupUsers(u).length),'نشطون اليوم: '+num(activeToday)+' · هذا الأسبوع: '+num(active7)],
     ['⏳','تنتهي خلال 7 أيام',num(soon.length),'تواصل معهم للتجديد'],
     ['⏱','وقت التعلم الكلي',num(Math.round(minutes/60))+' س',num(Math.round(minutes))+' دقيقة'],
   ].map(([i,a,b,c,h])=>`<div class="card kpi ${h||''}"><div class="k">${i} ${a}</div><div class="v">${b}</div><div class="s">${c}</div></div>`).join('');
@@ -651,19 +652,66 @@ async function unban(i){
   const {error}=await db.rpc('admin_unban',{p_device:b.device_id}); if(error) return toast(error.message);
   toast('تم فك الحظر ✅'); loadBans();
 }
-function renderUsers(){
-  const q=$('#uq').value.trim().toLowerCase();
-  const rows=USERS.filter(u=>!q||[u.full_name,u.email,u.phone,u.key_code,u.country,countryName(u.country),u.phone_model,u.last_ip].join(' ').toLowerCase().includes(q));
-  const online=USERS.filter(u=>u.last_seen&&Date.now()-new Date(u.last_seen)<10*60e3).length;
-  $('#ucount').textContent=`${num(USERS.length)} مستخدم، منهم ${num(USERS.filter(u=>u.is_guest).length)} ضيف · متصل الآن: ${num(online)}`;
-  renderCountries();
-  $('#utable').innerHTML=`<thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنس</th><th>درس</th><th>أتقن</th><th>للمراجعة</th><th>وقت التعلم</th><th>المفتاح</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>الإصدار</th><th>ينتهي</th><th>آخر ظهور</th></tr></thead><tbody>`+
-  (rows.length?rows.map(u=>`<tr><td>${u.is_guest?'<span class="pill p-guest">ضيف</span>':esc(u.full_name)}${isVip(u)?' <span class="pill vippill">♛ VIP</span>':''}</td><td class="en">${esc(u.email)}</td><td class="en">${esc(u.phone)}</td>
+// One row per phone: every guest sign-in / new account is a new user on the server,
+// so accounts are grouped by device id (or, for old rows without one, phone model + IP).
+// Accounts from before 2026-11-27 have no device id: they fall back to the phone model
+// (joined to the only known device id of that model, if there is exactly one);
+// accounts with no phone data at all are collected in one "old accounts" row.
+let MODEL_DEV={};
+function deviceKey(u){
+  if(u._k) return u._k;
+  const pm=u.phone_model||u.device_name;
+  return u._k = u.device_id ? 'd:'+u.device_id
+    : pm ? (MODEL_DEV[pm]&&MODEL_DEV[pm].size===1 ? 'd:'+[...MODEL_DEV[pm]][0] : 'p:'+pm)
+    : u.last_ip ? 'i:'+u.last_ip : 'none';
+}
+function prepUsers(list){
+  MODEL_DEV={};
+  list.forEach(u=>{ delete u._k; const pm=u.phone_model||u.device_name;
+    if(u.device_id&&pm){ (MODEL_DEV[pm]=MODEL_DEV[pm]||new Set()).add(u.device_id); } });
+}
+function rankUser(u){ // the account shown in the main row
+  return (u.key_code&&u.expires_at&&new Date(u.expires_at)>Date.now()?4:0)+(u.is_guest?0:2)+(u.key_code?1:0);
+}
+function groupUsers(list){
+  prepUsers(list);
+  const m=new Map();
+  list.forEach(u=>{const k=deviceKey(u); if(!m.has(k)) m.set(k,[]); m.get(k).push(u);});
+  return [...m.values()].map(g=>{
+    const t=x=>new Date(x.last_seen||x.last_active||x.created_at||0).getTime();
+    g.sort((a,b)=>rankUser(b)-rankUser(a)||t(b)-t(a));
+    return {main:g[0],others:g.slice(1),seen:Math.max(...g.map(t))};
+  }).sort((a,b)=>b.seen-a.seen);
+}
+const OPEN_DEV=new Set(); let DEV_KEYS=[];
+function toggleDev(k){ OPEN_DEV.has(k)?OPEN_DEV.delete(k):OPEN_DEV.add(k); renderUsers(); }
+function userRow(u,sub){
+  return `<tr${sub?' class="subrow"':''}><td>${sub?'<span class="muted">↳ </span>':''}${u.is_guest?'<span class="pill p-guest">ضيف</span>':esc(u.full_name)}${isVip(u)?' <span class="pill vippill">♛ VIP</span>':''}</td><td class="en">${esc(u.email)}</td><td class="en">${esc(u.phone)}</td>
     <td>${u.age??'—'}</td><td>${u.gender==='male'?'ذكر':u.gender==='female'?'أنثى':'—'}</td>
     <td>${num(u.studied)}</td><td style="color:var(--ok)">${num(u.mastered)}</td><td style="color:var(--ember)">${num(u.review)}</td>
     <td>${num(Math.round(u.seconds/60))} د</td><td class="code" onclick="${u.key_code?`copy('${u.key_code}')`:''}">${u.key_code??'—'}</td><td>${flagCell(u.country)}</td><td class="muted" title="${esc(u.user_agent)}">${esc(u.phone_model||u.device_name)||'—'}</td>
     <td class="en muted">${esc(u.last_ip)||'—'}</td><td class="en muted">${esc(u.app_version)||'—'}</td>
-    <td>${isVip(u)?'<span style="color:var(--gold)">♾ مدى الحياة</span>':fmtDate(u.expires_at)}</td><td>${seenCell(u.last_seen||u.last_active)}</td></tr>`).join(''):'<tr><td colspan="16" class="empty">لا يوجد مستخدمون مطابقون</td></tr>')+'</tbody>';
+    <td>${isVip(u)?'<span style="color:var(--gold)">♾ مدى الحياة</span>':fmtDate(u.expires_at)}</td><td>${seenCell(u.last_seen||u.last_active)}</td></tr>`;
+}
+function renderUsers(){
+  const q=$('#uq').value.trim().toLowerCase();
+  const match=u=>[u.full_name,u.email,u.phone,u.key_code,u.country,countryName(u.country),u.phone_model,u.last_ip].join(' ').toLowerCase().includes(q);
+  const groups=groupUsers(USERS);
+  const rows=groups.filter(g=>!q||[g.main,...g.others].some(match));
+  const online=groups.filter(g=>Date.now()-g.seen<10*60e3).length;
+  const guests=groups.filter(g=>g.main.is_guest).length;
+  $('#ucount').textContent=`${num(groups.length)} مستخدم (هاتف)، منهم ${num(guests)} ضيف · متصل الآن: ${num(online)}`+(USERS.length>groups.length?` · إجمالي الحسابات: ${num(USERS.length)}`:'');
+  renderCountries();
+  $('#utable').innerHTML=`<thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنس</th><th>درس</th><th>أتقن</th><th>للمراجعة</th><th>وقت التعلم</th><th>المفتاح</th><th>الدولة</th><th>الهاتف المستخدم</th><th>IP</th><th>الإصدار</th><th>ينتهي</th><th>آخر ظهور</th></tr></thead><tbody>`+
+  (rows.length?rows.map((g,i)=>{
+    const k=deviceKey(g.main), open=OPEN_DEV.has(k); DEV_KEYS[i]=k;
+    let h=userRow(g.main,false);
+    if(g.others.length){
+      h=h.replace('</td>',` <button class="btn sm devbtn" onclick="toggleDev(DEV_KEYS[${i}])">${open?'▴':'▾'} ${num(g.others.length)} ${g.others.length===1?'حساب آخر':'حسابات أخرى'} ${k==='none'?'قديمة بلا بيانات جهاز':'على هذا الهاتف'}</button></td>`);
+      if(open) h+=g.others.map(u=>userRow(u,true)).join('');
+    }
+    return h;
+  }).join(''):'<tr><td colspan="16" class="empty">لا يوجد مستخدمون مطابقون</td></tr>')+'</tbody>';
 }
 $('#uq').oninput=renderUsers;
 
