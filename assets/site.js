@@ -1,4 +1,4 @@
-// Fluent website: scroll effects + the Android install guide.
+// 6 Levels website: scroll effects + the Android install guide.
 (function () {
   // ---- header border + reveal on scroll ----
   const nav = document.querySelector('.nav');
@@ -6,11 +6,11 @@
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-  document.getElementById('yr').textContent = new Date().getFullYear();
+  const yr=document.getElementById('yr'); if (yr) yr.textContent = new Date().getFullYear();
 
   // ---- WhatsApp links with a ready message ----
   const WA = '201069205811';
-  const WA_MSG = 'السلام عليكم، أريد الاشتراك في تطبيق Fluent والحصول على مفتاح التفعيل.';
+  const WA_MSG = 'السلام عليكم، أريد الاشتراك في تطبيق 6 Levels والحصول على مفتاح التفعيل.';
   document.querySelectorAll('[data-wa]').forEach(a => { a.href = `https://wa.me/${WA}?text=${encodeURIComponent(WA_MSG)}`; });
 
   // ---- install guides (Android + iPhone) ----
@@ -21,7 +21,7 @@
   let player = null;
 
   async function openGuide(kind) {
-    title.textContent = kind === 'ios' ? 'إضافة Fluent إلى شاشة الآيفون' : 'طريقة تثبيت Fluent على أندرويد';
+    title.textContent = kind === 'ios' ? 'إضافة 6 Levels إلى شاشة الآيفون' : 'طريقة تثبيت 6 Levels على أندرويد';
     modal.hidden = false; document.body.style.overflow = 'hidden';
     const video = `assets/install-${kind}.mp4`;
     let hasVideo = false;
@@ -49,14 +49,14 @@
         <span>‹</span><span>›</span><span ${tapShare ? 'data-tap' : ''} style="font-size:18px">⬆</span><span>📖</span><span>⧉</span></div>`;
     return [
       { cap: 'افتح الموقع من متصفح Safari، ثم اضغط «افتح التطبيق الآن».', html: `
-          <div class="vbar">🔒 fluentegy.com</div>
-          <div class="vcenter"><img class="vicon" src="${icon}" alt=""><b style="color:#fff">Fluent</b></div>
+          <div class="vbar">🔒 amr98-1.github.io</div>
+          <div class="vcenter"><img class="vicon" src="${icon}" alt=""><b style="color:#fff">6 Levels</b></div>
           <div style="flex:1"></div>
           <span class="vbtn" data-tap>افتح التطبيق الآن</span>
           ${bottomBar(false)}` },
       { cap: 'اضغط زر المشاركة ⬆ أسفل الشاشة. (إن لم تجده، اضغط زر النقاط ··· ثم «مشاركة»).', html: `
-          <div class="vbar">🔒 fluentegy.com/app</div>
-          <div class="vbox" style="text-align:center"><b class="en">Fluent</b><br>مفتاح التفعيل</div>
+          <div class="vbar">🔒 amr98-1.github.io/app</div>
+          <div class="vbox" style="text-align:center"><b class="en">6 Levels</b><br>مفتاح التفعيل</div>
           ${bottomBar(true)}` },
       { cap: 'اسحب القائمة إلى الأعلى، واختر «إضافة إلى الشاشة الرئيسية».', html: `
           <div style="flex:1"></div>
@@ -67,12 +67,12 @@
             <div style="padding:8px 0">طباعة</div></div>` },
       { cap: 'تأكد أن «فتح كتطبيق ويب» مفعّل، ثم اضغط «إضافة».', html: `
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#4a9eff;padding:2px 4px"><span>إلغاء</span><b style="color:#fff">إضافة إلى الشاشة</b><span data-tap>إضافة</span></div>
-          <div class="vbox" style="display:flex;align-items:center;gap:10px"><img src="${icon}" style="width:44px;border-radius:11px" alt=""><div><b class="en">Fluent</b><br><span class="en" style="font-size:11px;color:#888">fluentegy.com</span></div></div>
+          <div class="vbox" style="display:flex;align-items:center;gap:10px"><img src="${icon}" style="width:44px;border-radius:11px" alt=""><div><b class="en">6 Levels</b><br><span class="en" style="font-size:11px;color:#888">amr98-1.github.io</span></div></div>
           <div class="vbox vtoggle on">فتح كتطبيق ويب <i></i></div>` },
-      { cap: 'ستظهر أيقونة Fluent على شاشتك. افتحها، وسجّل الدخول، وأدخل مفتاحك. 🎉', html: `
+      { cap: 'ستظهر أيقونة 6 Levels على شاشتك. افتحها، وسجّل الدخول، وأدخل مفتاحك. 🎉', html: `
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px;padding:16px 4px;text-align:center;font-size:10px;color:#ddd">
             ${['📷', '🗓', '⚙️', '🧭', '✉️', '🎵', '🗺'].map(e => `<div><div style="width:44px;height:44px;margin:auto;border-radius:11px;background:#2a2a2e;display:grid;place-items:center;font-size:22px">${e}</div></div>`).join('')}
-            <div data-tap><img src="${icon}" style="width:44px;height:44px;margin:auto;border-radius:11px" alt=""><span class="en">Fluent</span></div>
+            <div data-tap><img src="${icon}" style="width:44px;height:44px;margin:auto;border-radius:11px" alt=""><span class="en">6 Levels</span></div>
           </div>` },
     ];
   }
@@ -80,19 +80,19 @@
   function androidScenes() {
     return [
       { cap: 'اضغط زر «تحميل التطبيق» في هذه الصفحة.', html: `
-          <div class="vbar">🔒 fluentegy.com</div>
-          <div class="vcenter"><img class="vicon" src="${icon}" alt=""><b style="color:#fff">Fluent</b><br>تعلّم الإنجليزية جملةً بعد جملة</div>
+          <div class="vbar">🔒 amr98-1.github.io</div>
+          <div class="vcenter"><img class="vicon" src="${icon}" alt=""><b style="color:#fff">6 Levels</b><br>تعلّم الإنجليزية جملةً بعد جملة</div>
           <div style="flex:1"></div>
           <span class="vbtn" data-tap>⬇ تحميل التطبيق</span>
           <span class="vbtn s">▶ طريقة التثبيت</span>` },
       { cap: 'إن ظهرت رسالة تحذير، اضغط «تنزيل على أي حال». الملف آمن وصادر عنّا.', html: `
-          <div class="vbar">🔒 fluentegy.com</div>
+          <div class="vbar">🔒 amr98-1.github.io</div>
           <div style="flex:1"></div>
-          <div class="vbox"><b>قد يكون هذا الملف ضارًّا</b><br>هل تريد الاحتفاظ بالملف <span class="en">Fluent.apk</span> على أي حال؟
+          <div class="vbox"><b>قد يكون هذا الملف ضارًّا</b><br>هل تريد الاحتفاظ بالملف <span class="en">6-Levels.apk</span> على أي حال؟
             <div class="vrow" style="margin-top:10px"><span class="vbtn s">إلغاء</span><span class="vbtn g" data-tap>تنزيل على أي حال</span></div></div>` },
       { cap: 'بعد اكتمال التحميل، اضغط «فتح».', html: `
           <div class="vbox" style="display:flex;align-items:center;gap:10px"><img src="${icon}" style="width:34px;border-radius:9px" alt="">
-            <div style="flex:1"><b class="en">Fluent.apk</b><br><span style="color:#9a9">اكتمل التنزيل</span></div>
+            <div style="flex:1"><b class="en">6-Levels.apk</b><br><span style="color:#9a9">اكتمل التنزيل</span></div>
             <span class="vbtn g" style="padding:6px 12px" data-tap>فتح</span></div>` },
       { cap: 'في المرة الأولى فقط: يطلب الهاتف إذنك. اضغط «الإعدادات».', html: `
           <div style="flex:1"></div>
@@ -105,7 +105,7 @@
           <div class="vcenter" style="font-size:12px;color:#888">⟵ رجوع</div>` },
       { cap: 'اضغط «تثبيت».', html: `
           <div style="flex:1"></div>
-          <div class="vbox vcenter"><img class="vicon" style="margin-top:4px" src="${icon}" alt=""><b>Fluent</b><br>هل تريد تثبيت هذا التطبيق؟
+          <div class="vbox vcenter"><img class="vicon" style="margin-top:4px" src="${icon}" alt=""><b>6 Levels</b><br>هل تريد تثبيت هذا التطبيق؟
             <div class="vrow" style="margin-top:12px"><span class="vbtn s">إلغاء</span><span class="vbtn g" data-tap>تثبيت</span></div></div>` },
       { cap: 'إن ظهرت رسالة «Play Protect»، اضغط «مزيد من التفاصيل» ثم «التثبيت على أي حال».', html: `
           <div style="flex:1"></div>
@@ -116,8 +116,8 @@
           <div class="vbox vcenter" style="flex:1;display:flex;flex-direction:column;justify-content:center"><div class="vok">✓</div><b>تم تثبيت التطبيق</b>
             <div class="vrow" style="margin-top:16px"><span class="vbtn s">تم</span><span class="vbtn g" data-tap>فتح</span></div></div>` },
       { cap: 'أنشئ حسابك أو ادخل كضيف، ثم أدخل مفتاح التفعيل… وابدأ التعلّم! 🎉', html: `
-          <div class="vcenter" style="margin-top:20px"><img class="vicon" src="${icon}" alt=""><b style="color:#fff;font-size:18px" class="en">Fluent</b></div>
-          <div class="vbox" style="margin-top:14px">مفتاح التفعيل<div class="vbar" style="margin-top:6px;background:#111;color:#ccc">FLU-XXXX-XXXX</div></div>
+          <div class="vcenter" style="margin-top:20px"><img class="vicon" src="${icon}" alt=""><b style="color:#fff;font-size:18px" class="en">6 Levels</b></div>
+          <div class="vbox" style="margin-top:14px">مفتاح التفعيل<div class="vbar" style="margin-top:6px;background:#111;color:#ccc">XXXX-XXXX-XXXX</div></div>
           <span class="vbtn" data-tap>تفعيل</span>` },
     ];
   }
