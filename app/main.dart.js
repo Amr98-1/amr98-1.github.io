@@ -50223,7 +50223,7 @@ q=A.bR(a?B.t9:B.Sc,f,f)
 if(a)p=$.ag().b==="ar"?"\u062a\u0641\u0639\u064a\u0644 \u0645\u0641\u062a\u0627\u062d \u062c\u062f\u064a\u062f":"Activate a new key"
 else p=A.a4("key_title",f)
 p=A.K(p,f,f,f,f,f,A.ak(a0).ok.e.Mo(B.Z),B.aa,f)
-if(a)o=$.ag().b==="ar"?"\u0627\u0634\u062a\u0631\u0627\u0643\u0643 \u0627\u0644\u062d\u0627\u0644\u064a: \u0645\u062a\u0628\u0642\u064d\u0651 "+g.gWx()+".\n\u0639\u0646\u062f \u062a\u0641\u0639\u064a\u0644 \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062c\u062f\u064a\u062f \u062a\u064f\u0636\u0627\u0641 \u0645\u062f\u062a\u0647 \u0625\u0644\u0649 \u0627\u0644\u0623\u064a\u0627\u0645 \u0627\u0644\u0645\u062a\u0628\u0642\u064a\u0629\u060c \u0641\u0644\u0627 \u064a\u0636\u064a\u0639 \u0645\u0646\u0643 \u0623\u064a \u064a\u0648\u0645. \u0648\u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0641\u062a\u0627\u062d VIP \u0641\u0633\u064a\u0635\u0628\u062d \u0627\u0634\u062a\u0631\u0627\u0643\u0643 \u0645\u062f\u0649 \u0627\u0644\u062d\u064a\u0627\u0629 \u2726":"You have "+g.gWx()+" left. The new key's time is added on top, so you lose nothing. A VIP key makes it lifetime \u2726"
+if(a)o=$.ag().b==="ar"?"\u0627\u0634\u062a\u0631\u0627\u0643\u0643 \u0627\u0644\u062d\u0627\u0644\u064a: \u0645\u062a\u0628\u0642\u064d\u0651 "+g.gWx()+".\n\u0639\u0646\u062f \u062a\u0641\u0639\u064a\u0644 \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062c\u062f\u064a\u062f \u062a\u064f\u0636\u0627\u0641 \u0645\u062f\u062a\u0647 \u0625\u0644\u0649 \u0627\u0644\u0623\u064a\u0627\u0645 \u0627\u0644\u0645\u062a\u0628\u0642\u064a\u0629\u060c \u0641\u0644\u0627 \u064a\u0636\u064a\u0639 \u0645\u0646\u0643 \u0623\u064a \u064a\u0648\u0645 \u2726":"You have "+g.gWx()+" left. The new key's time is added on top, so you lose nothing \u2726"
 else o=A.a4("key_sub",f)
 o=A.K(o,f,f,f,f,f,A.am(f,f,A.u($.y?4284373329:4288321167),f,f,f,f,f,f,f,f,f,f,f,f,f,1.7,!0,f,f,f,f,f,f,f,f),B.aa,f)
 n=g.gAp()
@@ -53381,7 +53381,7 @@ b5=b5.b==="ar"?"\u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628 \u0646\u
 s.push(A.bR(A.Yf(A.K(b5,a1,a1,a1,a1,a1,A.am(a1,a1,B.a3.aA(0.85),a1,a1,a1,a1,a1,a1,a1,a1,13,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1),new A.aw6(b7),a1),a1,a1))
 s.push(B.aU)
 b5=A.a4("app_version",a1)
-s.push(A.bR(A.K(b5+" 1.0.3 \xb7 0",a1,a1,a1,a1,a1,A.am(a1,a1,A.u($.y?a6:a5),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1),a1,a1))
+s.push(A.bR(A.K(b5+" 1.0.3 \xb7 1",a1,a1,a1,a1,a1,A.am(a1,a1,A.u($.y?a6:a5),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1),a1,a1))
 return A.hx(s,a1,B.dh,!1)},
 $S:618}
 A.avZ.prototype={
@@ -54039,7 +54039,7 @@ B.c.L(f,A.b([B.db,A.K(m+" "+A.lp(q)+"/"+A.ts(q)+"/"+A.tr(q),k,k,k,k,k,A.am(k,k,A
 m=t.p
 n=A.b([d,B.eJ,new A.bE(0,p,k),B.au,new A.bE(1,o,k),B.ix,new A.bE(2,f,k),B.eJ,new A.bE(3,new A.eM(n,this.gafA(),this.d,B.hF,k),k)],m)
 if(!r){f=e?"\u062a\u0641\u0639\u064a\u0644 \u0645\u0641\u062a\u0627\u062d \u062c\u062f\u064a\u062f":"Activate a new key"
-d=e?"\u0627\u0634\u062a\u0631\u064a\u062a\u064e \u0645\u0641\u062a\u0627\u062d\u064b\u0627 \u062c\u062f\u064a\u062f\u064b\u0627\u061f \u0641\u0639\u0651\u0644\u0647\u060c \u0648\u0633\u062a\u064f\u0636\u0627\u0641 \u0645\u062f\u062a\u0647 \u0625\u0644\u0649 \u0627\u0644\u0623\u064a\u0627\u0645 \u0627\u0644\u0645\u062a\u0628\u0642\u064a\u0629 \u0644\u0643. \u0648\u0645\u0641\u062a\u0627\u062d VIP \u064a\u062c\u0639\u0644 \u0627\u0634\u062a\u0631\u0627\u0643\u0643 \u0645\u062f\u0649 \u0627\u0644\u062d\u064a\u0627\u0629.":"Bought a new key? Its time is added to what you have left. A VIP key makes it lifetime."
+d=e?"\u0627\u0634\u062a\u0631\u064a\u062a\u064e \u0645\u0641\u062a\u0627\u062d\u064b\u0627 \u062c\u062f\u064a\u062f\u064b\u0627\u061f \u0641\u0639\u0651\u0644\u0647\u060c \u0648\u0633\u062a\u064f\u0636\u0627\u0641 \u0645\u062f\u062a\u0647 \u0625\u0644\u0649 \u0627\u0644\u0623\u064a\u0627\u0645 \u0627\u0644\u0645\u062a\u0628\u0642\u064a\u0629 \u0644\u0643.":"Bought a new key? Its time is added to what you have left."
 B.c.L(n,A.b([B.ag,new A.bE(4,new A.fv(f,new A.aNz(a),B.oh,k,k),k),B.au,A.K(d,k,k,k,k,k,A.am(k,k,A.u($.y?g:h),k,k,k,k,k,k,k,k,12.5,k,k,k,k,1.6,!0,k,k,k,k,k,k,k,k),B.aa,k)],m))}return A.ev(k,A.i0(!0,A.hx(n,k,B.Rm,!1),!0))}}
 A.aNt.prototype={
 $0(){return this.a.d=!0},
@@ -54475,7 +54475,7 @@ q.ry=!0
 s=$.cI().b
 s===$&&A.a()
 r=t.z
-s.nn("report_device",A.W(["p_device_name",q.d,"p_app_version","1.0.3 \xb7 0 \xb7 web"],t.N,r),r).kI(new A.aba(q))},
+s.nn("report_device",A.W(["p_device_name",q.d,"p_app_version","1.0.3 \xb7 1 \xb7 web"],t.N,r),r).kI(new A.aba(q))},
 D9(){var s=0,r=A.p(t.y),q,p=this,o,n,m
 var $async$D9=A.q(function(a,b){if(a===1)return A.m(b,r)
 for(;;)switch(s){case 0:n=$.cI().b
